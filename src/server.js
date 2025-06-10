@@ -1,30 +1,30 @@
 import http from 'node:http'
 
-const tasks = []
+import { json } from './middlewares/json.js'
+import { routes } from './routes.js'
+import { extractQueryParams } from './utils/extract-query-params.js'
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
     const { method, url } = req
     
-    res.setHeader('Content-type', 'application/json')
+    await json(req, res)
 
-    if (method === 'GET' && url === '/tasks') {
-        return res.writeHead(200).end(JSON.stringify(tasks))
-    }
+    const route = routes.find(route => {
+        return method === route.method && route.path.test(url)
+    })
     
-    if (method === 'POST' && url === '/tasks') {
-        tasks.push({
-            id: 1,
-            title: 'Task 01',
-            description: 'Descrição da Task 01',
-            completed_at: null,
-            created_at: Date.now().toLocaleString(),
-            updated_at: Date.now().toLocaleString()
-        })
+    if (route) {
+        const routeParams = req.url.match(route.path)
 
-        return res.writeHead(200).end(JSON.stringify(tasks))
+        const { query, ...params } = routeParams.groups
+
+        req.params = params
+        req.query = query ? extractQueryParams(query) : {}
+
+        return route.handler(req, res)
     }
 
-    return res.writeHead(404).end('Resource not found')
+    return res.writeHead(404).end(JSON.stringify({ message: 'Resource not found.' }))
 
 })
 
