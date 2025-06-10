@@ -1,27 +1,31 @@
 import http from 'node:http'
+import { json } from './middlewares/json.js'
 
 const tasks = []
 
-const server = http.createServer((req, res) => {
+const server = http.createServer(async (req, res) => {
     const { method, url } = req
     
-    res.setHeader('Content-type', 'application/json')
+    await json(req, res)
 
     if (method === 'GET' && url === '/tasks') {
         return res.writeHead(200).end(JSON.stringify(tasks))
     }
     
     if (method === 'POST' && url === '/tasks') {
+        const { title, description } = req.body
+        const now = new Date()
+
         tasks.push({
             id: 1,
-            title: 'Task 01',
-            description: 'Descrição da Task 01',
+            title,
+            description,
             completed_at: null,
-            created_at: Date.now().toLocaleString(),
-            updated_at: Date.now().toLocaleString()
+            created_at: now.toLocaleString(),
+            updated_at: now.toLocaleString()
         })
 
-        return res.writeHead(200).end(JSON.stringify(tasks))
+        return res.writeHead(201).end()
     }
 
     return res.writeHead(404).end('Resource not found')
