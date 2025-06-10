@@ -10,7 +10,7 @@ const server = http.createServer(async (req, res) => {
     await json(req, res)
 
     const route = routes.find(route => {
-        return method === route.method && url === route.path
+        return method === route.method && route.path.test(url)
     })
     
     if (route) {
@@ -19,12 +19,12 @@ const server = http.createServer(async (req, res) => {
         const { query, ...params } = routeParams.groups
 
         req.params = params
-        req.query = extractQueryParams(query)
+        req.query = query ? extractQueryParams(query) : {}
 
         return route.handler(req, res)
     }
 
-    return res.writeHead(404).end('Resource not found')
+    return res.writeHead(404).end(JSON.stringify({ message: 'Resource not found.' }))
 
 })
 
