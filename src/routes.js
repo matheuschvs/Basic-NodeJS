@@ -30,8 +30,8 @@ export const routes = [
                 title,
                 description,
                 completed_at: null,
-                created_at: now.toLocaleString(),
-                updated_at: now.toLocaleString()
+                created_at: now.toISOString(),
+                updated_at: now.toISOString()
             })
 
             return res.writeHead(201).end()
@@ -49,7 +49,7 @@ export const routes = [
                 return res.writeHead(400).end(JSON.stringify({message: 'At least title or description must be provided for update.'}))
             }
 
-            const updated = database.update('tasks', id, {title, description, updated_at: now.toLocaleString()})
+            const updated = database.update('tasks', id, {title, description, updated_at: now.toISOString()})
 
             if (!updated) {
                 return res.writeHead(404).end(JSON.stringify({message: 'Task not found.'}))
@@ -65,7 +65,7 @@ export const routes = [
             const { id } = req.params
             const now = new Date()
 
-            const completed = database.completeTask('tasks', id, now.toLocaleString())
+            const completed = database.completeTask('tasks', id, now.toISOString())
 
             if (!completed) {
                 return res.writeHead(404).end(JSON.stringify({ message: 'Task not found or already completed.' }))
